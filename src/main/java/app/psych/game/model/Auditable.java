@@ -1,4 +1,4 @@
-package com.psych.game.model;
+package app.psych.game.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
@@ -11,12 +11,19 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
+@MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public abstract class Auditable implements Serializable {
-    @Column(nullable = false,updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
+    @Setter
+    private Long id;
+
+    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
     @Getter
     @Setter
     private Date createdAt = new Date();
@@ -27,4 +34,5 @@ public abstract class Auditable implements Serializable {
     @Getter
     @Setter
     private Date updatedAt = new Date();
+
 }

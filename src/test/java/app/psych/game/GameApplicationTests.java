@@ -1,4 +1,4 @@
-package com.psych.game;
+package app.psych.game;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
