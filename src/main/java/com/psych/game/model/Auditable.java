@@ -12,15 +12,19 @@ import java.io.Serializable;
 import java.util.Date;
 
 @EntityListeners(AuditingEntityListener.class)
-@JsonIgnoreProperties(allowGetters = true)
+@JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public abstract class Auditable implements Serializable {
     @Column(nullable = false,updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @CreatedDate
+    @Getter
+    @Setter
     private Date createdAt = new Date();
 
     @Column(nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     @LastModifiedDate
+    @Getter
+    @Setter
     private Date updatedAt = new Date();
 }
