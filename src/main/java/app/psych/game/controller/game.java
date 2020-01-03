@@ -9,6 +9,7 @@ import app.psych.game.repository.GameRepository;
 import app.psych.game.repository.PlayerRepository;
 import app.psych.game.repository.QuestionRepository;
 import app.psych.game.repository.RoundRepository;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,15 +35,13 @@ public class game {
         Optional<Player> optionalPlayer = playerRepository.findById(playerId);
         Player player = optionalPlayer.get();
         GameMode mode = GameMode.IS_THIS_A_FACT;
-
         Game game = new Game();
         game.setNumRounds(numRounds);
         game.setLeader(player);
         game.setGameMode(mode);
-        game.getPlayers().add(player);
-
+        List<Player> players = game.getPlayers();
+        game.setPlayers(players);
         gameRepository.save(game);
-
         return "" + game.getId() + "-" + Utils.getSecretCodeFromId(game.getId());
     }
 
@@ -62,7 +61,12 @@ public class game {
 
         return "successfully joined";
     }
-    @PostMapping ("/start/{pid}/{gc}")
+    // startGame - pid, gid/gc
+    // pid is actually the leader of the current game
+    // game has not already been started
+    // the game has more than 1 players
+
+    @GetMapping ("/start/{pid}/{gc}")
     public String startGame(@PathVariable(value = "pid") Long playerId,
                             @PathVariable(value = "gc") String gameCode){
         Optional<Game> optionalGame = gameRepository.findById(Utils.getGameIdFromSecretCode(gameCode));
@@ -84,17 +88,32 @@ public class game {
             // Raise some Exception
             return "The game needs more than 1 players to get started";
         }
-
+        game.setGameStatus(GameStatus.IN_PROGRESS);
+        gameRepository.save(game);
         return "Game started";
     }
-    // startGame - pid, gid/gc
-    // pid is actually the leader of the current game
-    // game has not already been started
-    // the game has more than 1 players
 
     // endGame - pid gid
     // make sure that you're the leader of the game
+    @GetMapping("/end/{pid}/{gid}")
+    public String endGame(@PathVariable(value = "pid") Long playerId,
+                          @PathVariable(value = "gid") Long gameId){
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        Game game = optionalGame.get();
+        Player player = game.getLeader();
 
+        if(player.getId() != playerId){
+            return "You are not authorised to end this game";
+        }
+        if(game.getGameStatus().equals(GameStatus.OVER)){
+            // Throw some Exception;
+            return "Game has already ended";
+        }
+
+        game.setGameStatus(GameStatus.OVER);
+        gameRepository.save(game);
+        return "Game has successfully ended";
+    }
 
     // getGameState - gid
     // JSON - current round - game stats of each player
