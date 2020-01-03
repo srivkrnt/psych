@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/dev")
@@ -22,7 +23,9 @@ public class PlayerController {
     }
 
     @GetMapping("/players/{id}")
-    public List<Player> getAllPlayers(@PathVariable(value = "id") Long id) {
-        return playerRepository.findAll();
+    public Player getAllPlayers(@PathVariable(value = "id") Long id) {
+        Optional<Player> optionalPlayer = playerRepository.findById(id);
+        Player player = optionalPlayer.get();
+        return player;
     }
 }

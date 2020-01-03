@@ -10,11 +10,9 @@ import app.psych.game.repository.PlayerRepository;
 import app.psych.game.repository.QuestionRepository;
 import app.psych.game.repository.RoundRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -48,7 +46,7 @@ public class game {
         return "" + game.getId() + "-" + Utils.getSecretCodeFromId(game.getId());
     }
 
-    @GetMapping("/create/{pid}/{gc}")
+    @GetMapping("/join/{pid}/{gc}")
     public String joinGame(@PathVariable(value = "pid") Long playerId,
                              @PathVariable(value = "gc") String gameCode) {
         Optional<Game> optionalGame = gameRepository.findById(Utils.getGameIdFromSecretCode(gameCode));
@@ -64,7 +62,31 @@ public class game {
 
         return "successfully joined";
     }
+    @PostMapping ("/start/{pid}/{gc}")
+    public String startGame(@PathVariable(value = "pid") Long playerId,
+                            @PathVariable(value = "gc") String gameCode){
+        Optional<Game> optionalGame = gameRepository.findById(Utils.getGameIdFromSecretCode(gameCode));
+        Game game = optionalGame.get();
 
+        if(game.getGameStatus().equals(GameStatus.IN_PROGRESS)){
+            // throw some Exception
+            return "Game is already in progress";
+        }
+
+        Player player = game.getLeader();
+        if(player.getId()!= playerId){
+            // throw some Exception
+            return "You are not allowed to start the game";
+        }
+
+        List<Player> players = game.getPlayers();
+        if(players.size() == 1){
+            // Raise some Exception
+            return "The game needs more than 1 players to get started";
+        }
+
+        return "Game started";
+    }
     // startGame - pid, gid/gc
     // pid is actually the leader of the current game
     // game has not already been started
