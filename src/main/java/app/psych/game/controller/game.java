@@ -1,19 +1,14 @@
 package app.psych.game.controller;
 
 import app.psych.game.Utils;
-import app.psych.game.model.Game;
-import app.psych.game.model.GameMode;
-import app.psych.game.model.GameStatus;
-import app.psych.game.model.Player;
-import app.psych.game.repository.GameRepository;
-import app.psych.game.repository.PlayerRepository;
-import app.psych.game.repository.QuestionRepository;
-import app.psych.game.repository.RoundRepository;
+import app.psych.game.model.*;
+import app.psych.game.repository.*;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -123,6 +118,35 @@ public class game {
 
     // leaveGame - pid, gid
     // update player's stats
+    @GetMapping("/leave/{pid}/{gid}")
+    public String leaveGame(@PathVariable(value = "pid") Long playerId,
+                            @PathVariable(value = "gid") Long gameId){
+        Optional<Game> optionalGame = gameRepository.findById(gameId);
+        Game game = optionalGame.get();
+
+        List<Player> players = game.getPlayers();
+        Optional<Player> optionalPlayer = playerRepository.findById(playerId);
+        Player player = optionalPlayer.get();
+        if(!players.contains(player)){
+            return "You are not part of this game";
+        }
+
+        Map<Player, Stats> playerStats = game.getPlayerStats();
+        Stats curPlayerStat = playerStats.get(player);
+        Stats prevPlayerStat = player.getStats();
+
+        Stats stat = new Stats();
+        stat.setCorrectAnswers(10);
+        stat.setGotPsychedCount(10);
+        stat.setPsychedOthersCount(10);
+
+        player.setStats(stat);
+        playerRepository.save(player);
+        game.getPlayers().remove(player);
+        gameRepository.save(game);
+
+        return "Game left - Stats Updated";
+    }
 
     // selectAnswer - pid, gid, answer-id
     // check if the answer is right or not,
