@@ -10,7 +10,6 @@ fotos
 plug
 mega
 avenue
-his
 dont
 words
 paid
